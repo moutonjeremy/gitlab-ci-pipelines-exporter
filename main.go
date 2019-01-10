@@ -17,6 +17,8 @@ import (
 	"github.com/Labbs/gitlab-ci-pipelines-exporter/settings"
 )
 
+var version = "v1.0"
+
 var (
 	timeSinceLastRun = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -48,6 +50,8 @@ func main() {
 	app.Name = "gitlab-ci-pipelines-exporter"
 	app.Flags = settings.NewContext()
 	app.Action = runWeb
+	app.Version = version
+	app.Copyright = "MIT"
 
 	app.Run(os.Args)
 }
