@@ -1,0 +1,20 @@
+language: go
+sudo: false
+go:
+  - "1.x"
+  - "1.8"
+  - "1.10.x"
+  - master
+
+script:
+  - make dep
+  - make
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: ee357c4e95b8837e8785872532d77aea19765683
+  file: bin/*
+  on:
+    tags: true
