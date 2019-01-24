@@ -1,3 +1,6 @@
+/*
+Main application package
+*/
 package main
 
 import (
@@ -17,7 +20,7 @@ import (
 	"github.com/Labbs/gitlab-ci-pipelines-exporter/settings"
 )
 
-var version = "v1.0"
+var version = "v1.1"
 
 var (
 	timeSinceLastRun = prometheus.NewGaugeVec(
@@ -45,17 +48,18 @@ var (
 	)
 )
 
+// main init configuration
 func main() {
 	app := cli.NewApp()
 	app.Name = "gitlab-ci-pipelines-exporter"
 	app.Flags = settings.NewContext()
 	app.Action = runWeb
 	app.Version = version
-	app.Copyright = "MIT"
 
 	app.Run(os.Args)
 }
 
+// runWeb start http server
 func runWeb(ctx *cli.Context) {
 	go getGitlabInfo()
 
@@ -67,23 +71,28 @@ func runWeb(ctx *cli.Context) {
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(settings.Port), nil))
 }
 
+// init prometheus metrics
 func init() {
 	prometheus.MustRegister(timeSinceLastRun)
 	prometheus.MustRegister(lastRunDuration)
 	prometheus.MustRegister(status)
 }
 
+// getGitlabInfo get all needed informations from gitlab instance and update some metrics
 func getGitlabInfo() {
+	// init gitlab configuration
 	client := gitlab.NewClient(nil, settings.Gitlab.Token)
 	client.SetBaseURL(settings.Gitlab.Url)
 
 	for {
+		// get all projects
 		opt := &gitlab.ListProjectsOptions{Owned: &settings.Gitlab.Owned}
 		projects, _, err := client.Projects.ListProjects(opt)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
+		// for each project, get pipelines and status
 		for _, project := range projects {
 			pipelines, _, _ := client.Pipelines.ListProjectPipelines(project.ID, &gitlab.ListProjectPipelinesOptions{})
 			var lastPipeline *gitlab.Pipeline
