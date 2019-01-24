@@ -1,3 +1,6 @@
+/*
+Package settings get configuration from environment variables or/and flags
+*/
 package settings
 
 import (
