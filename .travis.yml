@@ -10,6 +10,6 @@ deploy:
   api_key:
     secure: "vGo2zEEEgWB2BOphFoTJhlZoeQHHek77utM0vqAiDWVFbul7CgdNMoPZ23/d9WUklj3rzNnTUSh/azbzSg4gVPtEAvOaHmwaix4rZAblyAPwWm7QH11C1M9dK3/E/peP+EW+41vVaOp2MCyPNBHdh7yezKbvMc4TgOTi4b24DNVZpsgAzhV3FGI+3PVMEoMioz9cYwDDY7yzGOGwZUBGN3dy6brh4uZM2StsEX5ZxX3IGNZHPc6Y6PNb/KhVLSLSEQ+Y/9QsKFoI5NK2MiGBpieCbtj0AO3GLq2coFy8SLQ6e97WBxdXrQQlnRJYzBPyfGuykHbVFIrJwi3dS/uBJE21GUpB0XKcHei/eiaUFKIQguvhClbU6CA8tZpi5faLDAlWLDF7AB//dkcEhRTvloZ+rmi7zbI8Q1cLw+jsyNnQgT09fJEvWeNb1n9GgjeYT5qbf4NoC0Zfft0aYJ/vd/V5WHYeQeIDv0uDwhMhiYhCg1Vbt6BXVzmIqO6uWT/s8ViYtS+mE82SjIkvrfWTcIouZyD0WpVU+tdO4++/+ZhZfscDNJDQun1qrdTLPulbmNAv0uOvE8+XAEciO01sVODcz4jejpslcZRwdbKQP6fIqddYgIranPJyFXwkzYvBE/1RS5UbKpa4yNsRYjNsF5fkOYuszMq+3MqEhIWYxew="
   skip_cleanup: true
-  file: bin/*
+  file: bin/gitlab-ci-pipelines-exporter_linux_amd64
   on:
     tags: true
