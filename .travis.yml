@@ -1,17 +1,15 @@
 language: go
 sudo: false
 go:
-  - "1.x"
-  - "1.10.x"
-  - master
-
+- master
 script:
-  - make dep
-  - make build
-
+- make dep
+- make build
 deploy:
   provider: releases
+  api_key:
+    secure: "tOjRO0je2LA2jzGgTvORqCbnYv123IaF62oLTkYgL8LKist/cw12IbWlEdqlOYBE8gW5RdKjheZlPaPYeJz9HkgcZvYA89IDyhPz2c9qfjmWMshrpi5A0bLvY1EXDv3LTsNKSb4JjGDelTb2kP2J0iHY+Qs6YkwvrexiKzrmXIItus8Qw9wJ73nOjf6kMpDhSnUEdsZ5ElisK0RJb6QQHmKsWglMT8yss4az+DW2SfPCTln9lB+w7o4V17CHedvuKohLjsDW0L56DWaHcQwoqLxRKT3M22kdnNLeHQ/FFzDGSsIomhTyFrSUrJCiTNSA8ZHp7YQBhnZJJs+UNjiBqkzkZ/gBjp2cPCF7l/BAYIcFGIYwVM7F93FtbaazWwNP5jutN2gjbCy9dr7QiXKRzczPdoVx6Rvf/5U3gBxzwwagWV1lH19U3mlDUJb79FhCapX70bqstyg10OieDS+OkSy0P4NYJr2egL0qplNBXGzeB1+P9nzi7fgRLKrnvBVcT5YqjtG4x152DjvLxvdq0uzr4t9VCx8lgAD5r8sYXoW9QxW0ymabw6en22y7nLslZP9f49A1jEaaFrQ89t9E6kGLjL8ykB2kqcKcB1bAOugukbEr2ogXyQxCxlEsgzc0gwXZosyrV1bYuJ4s9qUD2bvvveI3KIsQxbuj/tw2wwg="
   skip_cleanup: true
-  file: bin/*
+  file: bin/gitlab-ci-pipelines-exporter
   on:
     tags: true
