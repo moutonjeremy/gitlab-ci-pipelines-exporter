@@ -1,6 +1,10 @@
 # gitlab-ci-pipelines-exporter
 Export gitlab-ci pipeline status for prometheus (/metrics)
 
+[![Build Status](https://travis-ci.org/Labbs/gitlab-ci-pipelines-exporter.svg?branch=master)](https://travis-ci.org/Labbs/gitlab-ci-pipelines-exporter)
+
+
+
 ## Options
 
 | Name | Env | Parameter | Default | Description | 
