@@ -2,6 +2,9 @@ language: go
 sudo: required
 go: '1.10.x'
 
+services:
+  - docker
+
 env:
   global:
     - secure: "TH08JxaKj0OdtFQgJEzGQMAH7PDzebBl7uJHIeX7+L9q9wPGdnAKDfQ1ZJpwybEMZZCXzWlg/spbjGuR7xXZzCxXE1mfhe/aKu+YCldh3YVrKNrZh8apKepu+rzgHeDgpmQCkwpNaA5kjK2hbZ2OA7JL4wYPZe3CipuApSIu2MkWTFHbbLAO80UcBWLoHzYJRv9qvckXFqn4qnQN5+p32EoofiCbxTclfnAT1JRBGkRJzh9yuztqJi8gAC08dMYm6f7gTbe9ZkCn3wGUD0UW8qJC5sReSCLmHCjNgIGPHIXIUknm54TSsYCrghJxKlMe4T0WXuMYrfm/3hs1GOdJ8vTBoZdOu7aiwwbI/d7l/eXuRxbgf+F/X9yPeOEaEThV0Exihi5ze7VuQZWu9iAObCfJ01OT3uY1bcqkhC3nCcc7+cuDmxqP9Wv7KZss7g5Jotne6WeryxumxQVX1hZX6qEUrDx1mDfjUvzQj5UaWim5QDy1LA/8+X5MEpmpzoGDATW38Y6t5ca8nQ7bJGCqTVdoj5P6F+HvSYkJz6BTAw9ls2HUeb3PzEHvvcg+30tyY9rH5+Kd3OffJAdjULySfwD4N+3LD+FJjgYXU+sAWuqzugM7Cz1zF6Q1te/X+CYOACyWLjaVwBt+8PMUju/9wj+5e45wld+Ojy1Ai6GvqWY="
@@ -9,7 +12,6 @@ env:
 
 stages:
   - build
-  - 'to github'
   - 'to dockerhub'
 
 jobs:
@@ -18,21 +20,20 @@ jobs:
       script:
         - make dep
         - make build
-
-    - stage: 'to github'
-      provider: releases
-      api_key:
-        secure: "vGo2zEEEgWB2BOphFoTJhlZoeQHHek77utM0vqAiDWVFbul7CgdNMoPZ23/d9WUklj3rzNnTUSh/azbzSg4gVPtEAvOaHmwaix4rZAblyAPwWm7QH11C1M9dK3/E/peP+EW+41vVaOp2MCyPNBHdh7yezKbvMc4TgOTi4b24DNVZpsgAzhV3FGI+3PVMEoMioz9cYwDDY7yzGOGwZUBGN3dy6brh4uZM2StsEX5ZxX3IGNZHPc6Y6PNb/KhVLSLSEQ+Y/9QsKFoI5NK2MiGBpieCbtj0AO3GLq2coFy8SLQ6e97WBxdXrQQlnRJYzBPyfGuykHbVFIrJwi3dS/uBJE21GUpB0XKcHei/eiaUFKIQguvhClbU6CA8tZpi5faLDAlWLDF7AB//dkcEhRTvloZ+rmi7zbI8Q1cLw+jsyNnQgT09fJEvWeNb1n9GgjeYT5qbf4NoC0Zfft0aYJ/vd/V5WHYeQeIDv0uDwhMhiYhCg1Vbt6BXVzmIqO6uWT/s8ViYtS+mE82SjIkvrfWTcIouZyD0WpVU+tdO4++/+ZhZfscDNJDQun1qrdTLPulbmNAv0uOvE8+XAEciO01sVODcz4jejpslcZRwdbKQP6fIqddYgIranPJyFXwkzYvBE/1RS5UbKpa4yNsRYjNsF5fkOYuszMq+3MqEhIWYxew="
-      skip_cleanup: true
-      file: bin/gitlab-ci-pipelines-exporter_linux_amd64
-      on:
-        tags: true
     
     - stage: 'to dockerhub'
       script:
         - docker login -u $DOCKER_USER -p $DOCKER_PASS
-        - docker build -f Dockerfile -t labbsio/gitlab-ci-pipelines-exporter:$TRAVIS_TAG .
-        - docker tag labbsio/gitlab-ci-pipelines-exporter:$TRAVIS_TAG labbsio/gitlab-ci-pipelines-exporter:latest
+        - export TAG=`if [[ $TRAVIS_TAG ]]; then echo $TRAVIS_TAG; else echo ${TRAVIS_COMMIT::8}; fi`
+        - docker build -f Dockerfile -t labbsio/gitlab-ci-pipelines-exporter:$TAG .
+        - docker tag labbsio/gitlab-ci-pipelines-exporter:$TAG labbsio/gitlab-ci-pipelines-exporter:latest
         - docker push labbsio/gitlab-ci-pipelines-exporter
-      on:
-        tags: true
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "vGo2zEEEgWB2BOphFoTJhlZoeQHHek77utM0vqAiDWVFbul7CgdNMoPZ23/d9WUklj3rzNnTUSh/azbzSg4gVPtEAvOaHmwaix4rZAblyAPwWm7QH11C1M9dK3/E/peP+EW+41vVaOp2MCyPNBHdh7yezKbvMc4TgOTi4b24DNVZpsgAzhV3FGI+3PVMEoMioz9cYwDDY7yzGOGwZUBGN3dy6brh4uZM2StsEX5ZxX3IGNZHPc6Y6PNb/KhVLSLSEQ+Y/9QsKFoI5NK2MiGBpieCbtj0AO3GLq2coFy8SLQ6e97WBxdXrQQlnRJYzBPyfGuykHbVFIrJwi3dS/uBJE21GUpB0XKcHei/eiaUFKIQguvhClbU6CA8tZpi5faLDAlWLDF7AB//dkcEhRTvloZ+rmi7zbI8Q1cLw+jsyNnQgT09fJEvWeNb1n9GgjeYT5qbf4NoC0Zfft0aYJ/vd/V5WHYeQeIDv0uDwhMhiYhCg1Vbt6BXVzmIqO6uWT/s8ViYtS+mE82SjIkvrfWTcIouZyD0WpVU+tdO4++/+ZhZfscDNJDQun1qrdTLPulbmNAv0uOvE8+XAEciO01sVODcz4jejpslcZRwdbKQP6fIqddYgIranPJyFXwkzYvBE/1RS5UbKpa4yNsRYjNsF5fkOYuszMq+3MqEhIWYxew="
+  skip_cleanup: true
+  file: bin/gitlab-ci-pipelines-exporter_linux_amd64
+  on:
+    tags: true
