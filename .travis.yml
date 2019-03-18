@@ -1,20 +1,44 @@
 language: go
-sudo: false
-go:
-  - "1.10.x"
-  - "1.11.x"
-  - tip
+sudo: required
+go: '1.10.x'
 
-script:
-  - make dep
-  - make sec
-  - make build
+services:
+  - docker
+
+cache:
+  directories:
+    - bin/
+
+env:
+  global:
+    - secure: "TH08JxaKj0OdtFQgJEzGQMAH7PDzebBl7uJHIeX7+L9q9wPGdnAKDfQ1ZJpwybEMZZCXzWlg/spbjGuR7xXZzCxXE1mfhe/aKu+YCldh3YVrKNrZh8apKepu+rzgHeDgpmQCkwpNaA5kjK2hbZ2OA7JL4wYPZe3CipuApSIu2MkWTFHbbLAO80UcBWLoHzYJRv9qvckXFqn4qnQN5+p32EoofiCbxTclfnAT1JRBGkRJzh9yuztqJi8gAC08dMYm6f7gTbe9ZkCn3wGUD0UW8qJC5sReSCLmHCjNgIGPHIXIUknm54TSsYCrghJxKlMe4T0WXuMYrfm/3hs1GOdJ8vTBoZdOu7aiwwbI/d7l/eXuRxbgf+F/X9yPeOEaEThV0Exihi5ze7VuQZWu9iAObCfJ01OT3uY1bcqkhC3nCcc7+cuDmxqP9Wv7KZss7g5Jotne6WeryxumxQVX1hZX6qEUrDx1mDfjUvzQj5UaWim5QDy1LA/8+X5MEpmpzoGDATW38Y6t5ca8nQ7bJGCqTVdoj5P6F+HvSYkJz6BTAw9ls2HUeb3PzEHvvcg+30tyY9rH5+Kd3OffJAdjULySfwD4N+3LD+FJjgYXU+sAWuqzugM7Cz1zF6Q1te/X+CYOACyWLjaVwBt+8PMUju/9wj+5e45wld+Ojy1Ai6GvqWY="
+    - secure: "JnzDmiQEHCsNImK8EC4grek34zPkkOUMEk6egQPNlAlyCbYva/uz7vH+CFYc37e6eDNZAsySMKkhu+tu1GtPx8Mc0tDbuKdTpi1PhrTAhRSFbBW9IoM5zOC6DVvOXLCVgH+XAuGeI6Lz6y2ACimhD7zt2vp4lfA2cPsoe6LUz3rGIo4PLRDfnJuZtaP+qbgmgbmJb3UKt8X82Pp7Y/NszwMkFh8Uy2plahgoZMVYqAJRPoQ0P+rdGs5Tv1LvEpfeCwTOj1GWMpsy9ofSF4uP7MxGYh8ItdBmn9the4o2VwKuEdn4i9WyA4wzh7TvDf/BN6Cu3MegEGncj56wstJUJMI9ar8k5uUQ/GnxCT+HxIeeMHkVtdBoDWwidH1OcwGaAgYZCbrL9HxSb/dmyKM1PcSem4IoRS1SCFWaj+9ZiNNHRSnzr/HXmpV/ybvQIdf0bqBY2fUdzvYredhDOBpH/tVgxdcfnmvSAQQsJ70yuOApkYzvfOmCsty+hlJxKu+pa8Q9WKmBak4d0n6hoH8YoTUyL71YfliCF5eCqmhIpIvjQ4+oJ2kuRLyjHrJSCV1ZMMGFrAwikrXjpF0hQR9QH0IDBeDUbqVTxjzZUUHZ21d1LHViGdgu7WudqsvncZNi3A/StyDIXVY5b8zZglC63ZRbEPgFyBmyfVoYRGittRs="
+
+stages:
+  - build
+  - 'to dockerhub'
+
+jobs:
+  include:
+    - stage: build
+      script:
+        - make dep
+        - make sec
+        - make build
+    
+    - stage: 'to dockerhub'
+      script:
+        - docker login -u $DOCKER_USER -p $DOCKER_PASS
+        - export TAG=`if [[ $TRAVIS_TAG ]]; then echo $TRAVIS_TAG; else echo ${TRAVIS_COMMIT::8}; fi`
+        - docker build -f Dockerfile -t labbsio/gitlab-ci-pipelines-exporter:$TAG .
+        - docker tag labbsio/gitlab-ci-pipelines-exporter:$TAG labbsio/gitlab-ci-pipelines-exporter:latest
+        - docker push labbsio/gitlab-ci-pipelines-exporter
 
 deploy:
   provider: releases
-  skip_cleanup: true
   api_key:
-    secure: "hvU43vT7v5vQj2p+JexhpKRcjS4ly3LGCrOUwXRYFPlPqs68E8R6YxVpLxWRWIhcf9dPUzAtWzS0S1DKihSH3qpSkL5+bNMBf1P4F2URl/J+xL6/JBL/p7F9QO2/TT0rWl0JHZNVEBEwEEhR3CYdvJ1N4zFuYeX1C0pPzgk1CognOKl75MSUsBLhwSriSZ0kow9OUnwZattuLOycY0wGF7aZXSbevfk6et/4mzwGD3yeCPttNqvZYwByhDdqxHLDW5RSDvFu6o+CrTR7AJYcKP61HVpQ4Cd39IN21WvKSlw4WtcdqejwARB+Ztdbd1zPDdpVyLj1N7wztbrPHzU6YOlN1HPdoZIK/wdWIEvwU5t/uX2ZaMjfSLfoNrCF3PcsN4oMHMN3/YnF4opKL8JYGzPVLutNxXWmSWjZZNwvzIkaokeUpZG5sZxTHq9aU6sj/2sT/7EKuyHijr/ryW6/xxm7f2kx7XJVsTMCz8Dx/8zwLvHOPoI1CEO1DztOtaQjXXQLu0tQS+1cIuQEoQNOyjGRsAutLrs2a0nJbh0twwQEYb/IGcskRRENZB3xaRjPm5i0x1MgGOEvr85Lm42LWpOnkhbvK0Ad4/WlnZOOCo3aUaldqynNJhg8tcg98P9b3V3RyQJxVKLLdEzHK2+ZDG9vRfu3my480UpSjiW0Yl0="
-  file: bin/*
+    secure: "vGo2zEEEgWB2BOphFoTJhlZoeQHHek77utM0vqAiDWVFbul7CgdNMoPZ23/d9WUklj3rzNnTUSh/azbzSg4gVPtEAvOaHmwaix4rZAblyAPwWm7QH11C1M9dK3/E/peP+EW+41vVaOp2MCyPNBHdh7yezKbvMc4TgOTi4b24DNVZpsgAzhV3FGI+3PVMEoMioz9cYwDDY7yzGOGwZUBGN3dy6brh4uZM2StsEX5ZxX3IGNZHPc6Y6PNb/KhVLSLSEQ+Y/9QsKFoI5NK2MiGBpieCbtj0AO3GLq2coFy8SLQ6e97WBxdXrQQlnRJYzBPyfGuykHbVFIrJwi3dS/uBJE21GUpB0XKcHei/eiaUFKIQguvhClbU6CA8tZpi5faLDAlWLDF7AB//dkcEhRTvloZ+rmi7zbI8Q1cLw+jsyNnQgT09fJEvWeNb1n9GgjeYT5qbf4NoC0Zfft0aYJ/vd/V5WHYeQeIDv0uDwhMhiYhCg1Vbt6BXVzmIqO6uWT/s8ViYtS+mE82SjIkvrfWTcIouZyD0WpVU+tdO4++/+ZhZfscDNJDQun1qrdTLPulbmNAv0uOvE8+XAEciO01sVODcz4jejpslcZRwdbKQP6fIqddYgIranPJyFXwkzYvBE/1RS5UbKpa4yNsRYjNsF5fkOYuszMq+3MqEhIWYxew="
+  skip_cleanup: true
+  file: bin/gitlab-ci-pipelines-exporter_linux_amd64
   on:
     tags: true
