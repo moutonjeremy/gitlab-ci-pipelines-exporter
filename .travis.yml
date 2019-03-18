@@ -23,6 +23,7 @@ jobs:
     - stage: build
       script:
         - make dep
+        - make sec
         - make build
     
     - stage: 'to dockerhub'
