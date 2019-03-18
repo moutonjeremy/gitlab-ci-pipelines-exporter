@@ -1,13 +1,14 @@
 language: go
 sudo: false
 go:
-  - "1.x"
   - "1.10.x"
-  - master
+  - "1.11.x"
+  - tip
 
 script:
   - make dep
-  - make
+  - make sec
+  - make build
 
 deploy:
   provider: releases
