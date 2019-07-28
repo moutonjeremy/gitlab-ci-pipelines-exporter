@@ -28,7 +28,7 @@ var (
 			Name: "gitlab_ci_pipeline_time_since_last_run_seconds",
 			Help: "Elapsed time since most recent GitLab CI pipeline run.",
 		},
-		[]string{"project", "ref", "id"},
+		[]string{"project", "pathwithnamespace", "ref", "id"},
 	)
 
 	lastRunDuration = prometheus.NewGaugeVec(
@@ -36,7 +36,7 @@ var (
 			Name: "gitlab_ci_pipeline_last_run_duration_seconds",
 			Help: "Duration of last pipeline run",
 		},
-		[]string{"project", "ref", "id"},
+		[]string{"project", "pathwithnamespace", "ref", "id"},
 	)
 
 	status = prometheus.NewGaugeVec(
@@ -44,7 +44,7 @@ var (
 			Name: "gitlab_ci_pipeline_status",
 			Help: "GitLab CI pipeline current status",
 		},
-		[]string{"project", "ref", "status", "id"},
+		[]string{"project", "pathwithnamespace", "ref", "status", "id"},
 	)
 )
 
@@ -98,16 +98,17 @@ func getGitlabInfo() {
 			var lastPipeline *gitlab.Pipeline
 			if len(pipelines) != 0 {
 				lastPipeline, _, _ = client.Pipelines.GetPipeline(project.ID, pipelines[0].ID)
-				lastRunDuration.WithLabelValues(project.Name, pipelines[0].Ref, strconv.Itoa(pipelines[0].ID)).Set(float64(lastPipeline.Duration))
+				lastRunDuration.WithLabelValues(project.Name, project.PathWithNamespace, pipelines[0].Ref, strconv.Itoa(pipelines[0].ID)).Set(float64(lastPipeline.Duration))
 				for _, s := range []string{"success", "failed", "running"} {
 					if s == lastPipeline.Status {
-						status.WithLabelValues(project.Name, pipelines[0].Ref, s, strconv.Itoa(pipelines[0].ID)).Set(1)
+						status.WithLabelValues(project.Name, project.PathWithNamespace, pipelines[0].Ref, s, strconv.Itoa(pipelines[0].ID)).Set(1)
 					} else {
-						status.WithLabelValues(project.Name, pipelines[0].Ref, s, strconv.Itoa(pipelines[0].ID)).Set(0)
+						status.WithLabelValues(project.Name, project.PathWithNamespace, pipelines[0].Ref, s, strconv.Itoa(pipelines[0].ID)).Set(0)
 					}
 				}
 				timeSinceLastRun.WithLabelValues(
 					project.Name,
+					project.PathWithNamespace,
 					pipelines[0].Ref,
 					strconv.Itoa(pipelines[0].ID)).Set(
 					float64(time.Since(*lastPipeline.CreatedAt).Round(time.Second).Seconds()))
